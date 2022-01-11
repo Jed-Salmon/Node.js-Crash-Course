@@ -1,0 +1,7 @@
+Channel: The Net Ninja
+
+Introduction & Setup:
+https://www.youtube.com/watch?v=zb3Qk8SG5Ms&list=PL4cUxeGkcC9jsz4LDYc6kv3ymONOKxwBU&index=1
+
+Node.js Basics:
+https://www.youtube.com/watch?v=OIBIXYLJjsI&list=PL4cUxeGkcC9jsz4LDYc6kv3ymONOKxwBU&index=2
