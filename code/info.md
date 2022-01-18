@@ -1,60 +1,35 @@
-There are two types of databases, SQL & NoSQL.
+### Request Types:
 
-#### SQL:
+GET: requests to get a resource
+POST: requests to create new data (e.g. a new blog)
+DELETE: requests to delete data (e.g. delete a blog)
+PUT: requests to update data (e.g. update a blog)
 
-- Tables
-- Rows
-- Columns
+We can use the same routes for different types of requests:
+GET - localhost:3000/blogs
+POST - localhost:3000/blogs
 
-#### NoSQL:
+GET/PUT/DELETE - localhost:3000/blogs/:id
+route variable is dependant on the blog we want to get
 
-- collections
-- documents
+### Urlencoded
 
-MonoDB is a NoSQL database.
+Parses the fields included in a urlencoded payload sent with a request to your server, and adds their values into a body object on the request.
 
-### How does a NoSQL database work?
+Most commonly found when posting with an HTML form to your server, since urlencoding is the default. Passing the extended: true option to urlencoded will further parse nested structures sent in the urlencoded payload.
 
-- Split up into collections which are a bit like tables in SQL
-- Each collection stores a particular type of data, e.g. user collection stores user documents, a blog collection would store blog documents.
-- Each collection only contains ONE type of document, in our case that is a blog document.
-- A document is like a record in an SQL database.
-- Each document represents a single item of data, so a blog document represents a single blog.
-- Stored in a format that is similar to JSON that hold key and value pairs.
-- From our code we could connect to a collection (blogs) and save, read, update or delete documents inside it.
+Essentially it adds a req.body object to our req, containing a Javascript object representing the payload sent with the request
 
-### MongoDB Setup Options
+### MVC - Model, View, Controller
 
-- We could install MongoDB locally, use and deploy it.
-- We can also use a cloud database which is hosted for us.
-- For this crash course we use the later, using MongoDB Atlas.
+A method of structuring our code and our files that aims to make our code more modular reusable and easier to maintain.
 
-### Mongoose
+- Views are where we make our HTML templates that a user will see
+- Models are how we describe our data structure and we use them to interact with the database (Schema & Models).
+- Controllers form the link between our model and views. It acts as middlemen that use models to get data and then pass that data into a view.
 
-- Mongoose is an ODM library - Object Document Mapping library
-- wraps the standard MongoDB API and provides us with a much easier way to connect and use the database.
-- we can create simple data models which have database query methods to create, get, delete and update data based documents.
-- Mongoose does all the heavy lifting for us. It queries the correct database collection based on the name of the model and performs the action required and returns us a response.
+We have previously made our controllers directly in the route file. The idea of using controllers is that we extract those handler functions into a separate controller file. Then we can reference those controller files in our routes.
 
-### Schemas
+Our route file matches incoming requests and it passes those requests to the correct controller function. A controller communicates with the appropriate model to get data into a view, and then the view then renders that data into its template and it gets sent to the browser.
 
-- In mongoose we make a schema first.
-- The schema defines the structure of a data type or document stored in a database collection. It describes what properties it should have, the type of those properties.
-
-User Schema
-
-- name (string), required
-- age (number),
-- bio (string), required
-
-Blog Schema
-
-- title (string), required
-- snippet (string), required
-- body (string), required
-
-### Models
-
-- Models allow us to communicate with database collections.
-- We create a model based on our schema.
-- Our blog model will have both static and instance methods which we can use to save, update, delete or read data from the blogs collection.
+The idea behind this is just to make our code easier to manage and to understand. Essentially we're just splitting our code into different areas and then each area or file has its own job to do.

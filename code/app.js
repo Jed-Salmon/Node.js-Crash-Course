@@ -1,15 +1,14 @@
+const { render } = require("ejs");
 const express = require("express");
 const mongoose = require("mongoose");
-const Blog = require("./models/blog");
+const morgan = require("morgan");
+const blogRoutes = require("./routes/blogRoutes");
 
 // initialize express app
 const app = express();
 
 // register view engine (ejs)
 app.set("view engine", "ejs");
-
-// give access to static files
-app.use(express.static("public"));
 
 // connect to MongoDB
 const dbURI =
@@ -26,74 +25,29 @@ mongoose
 // An asynchronous task, takes some time to do...
 // we do not want our server listening for requests until the connection had been made. By moving app.listen() to within the .then() block, we then only listen for requests after the connection is complete.
 
-// mongoose and mongo sandbox routes
-app.get("/add-blog", (req, res) => {
-  const blog = new Blog({
-    title: "new blog 2",
-    snippet: "about my newest blog",
-    body: "more about my newest blog",
-  });
-  // use the model to create a new instance of a blog document, where we pass an object with the different properties of this blog.
+// Middleware & Static files
+app.use(morgan("dev"));
+app.use(express.static("public"));
+// give access to static files
+// allows our views to reference files relatively, as it looks into the public folder by default.
 
-  // instance method to save it to the database
-  // asynchronous and returns a promise
-  blog
-    .save()
-    .then((result) => {
-      res.send(result);
-    })
-    .catch((error) => console.log(error));
-  // Once mongoose saves to the database, the database then sends us back an object version of the document inside the collection that it has saved.
-  // http://localhost:3000/add-blog
-});
+app.use(express.urlencoded({ extended: true }));
+// middleware to parse incoming data sent (POST) from our form (create.ejs) to a workable format. Takes the URL encoded data from our form submission and parses that to an object that we can use on the request object.
 
-// find a single blog
-app.get("/single-blog", (req, res) => {
-  // mongoose handles the conversion from MongoDB ObjectId to a string and vice-versa.
-  Blog.findById("61e5852e442a686b98f10b3f")
-    .then((result) => res.send(result))
-    .catch((error) => console.log(error));
-});
-
-// retrieve all blogs in the collection
-app.get("/all-blogs", (req, res) => {
-  // get all documents inside the blog collection.
-  // asynchronous operation, must handle promises.
-  Blog.find()
-    .then((result) => {
-      res.send(result);
-    })
-    .catch((error) => console.log(error));
-});
-
-// respond to requests
+// routes
 app.get("/", (req, res) => {
-  const blogs = [
-    {
-      title: "Yoshi finds eggs",
-      snippet: "Lorem ipsum dolor sit amet consectetur",
-    },
-    {
-      title: "Mario finds stars",
-      snippet: "Lorem ipsum dolor sit amet consectetur",
-    },
-    {
-      title: "How to defeat bowser",
-      snippet: "Lorem ipsum dolor sit amet consectetur",
-    },
-  ];
-  res.render("index", { title: "Home", blogs });
-  // takes the view, render it and send back the browser
-  // second arg used to pass data from our handler to the view (ejs file)
+  res.redirect("/blogs");
 });
 
 app.get("/about", (req, res) => {
   res.render("about", { title: "About" });
 });
 
-app.get("/blogs/create", (req, res) => {
-  res.render("create", { title: "Create a new Blog" });
-});
+// blog routes
+// With Express router we can extract our routes into different files, create a kind of mini app and then use those routes in our app
+app.use("/blogs", blogRoutes);
+// applies all handlers to our express app
+// scoped the routes to "/blogs"
 
 // 404 page - catch all route
 app.use((req, res) => {

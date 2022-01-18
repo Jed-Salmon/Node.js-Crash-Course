@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+  <%- include("../partials/head.ejs") %>
+  <body>
+    <%- include("../partials/nav.ejs") %>
+
+    <div class="details content">
+      <h2><%= blog.title %></h2>
+      <div class="content">
+        <p><%= blog.body %></p>
+      </div>
+      <a class="delete" data-doc="<%= blog._id %>">
+        <img src="/trashcan.svg" alt="delete-icon" />
+      </a>
+      <!-- custom 'doc' attribute by appending to 'data-' -->
+      <!-- set the value to be the id we want to delete. When we click on this link, we grab this data in JavaScript and using the Fetch API, send a delete request with that document ID -->
+    </div>
+
+    <%- include("../partials/footer.ejs") %>
+
+    <script>
+      const trashcan = document.querySelector("a.delete");
+
+      trashcan.addEventListener("click", (e) => {
+        const endpoint = `/blogs/${trashcan.dataset.doc}`;
+
+        // send delete request to our endpoint
+        fetch(endpoint, {
+          method: "DELETE",
+        })
+          .then((response) => {
+            // get JSON back and parse it
+            return response.json(); // an object with a redirect key and value
+          })
+          .then((data) => {
+            // redirect on the frontend
+            window.location.href = data.redirect;
+          })
+          .catch((error) => console.log(error));
+      });
+      // sends an ajax request
+    </script>
+  </body>
+</html>
