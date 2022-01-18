@@ -3,4 +3,7 @@
 - Node.js Basics
 - Clients, Servers, Requests and Responses
 - Express apps
-- More to come
+- View Engines
+- Middleware
+- MongoDB
+- Blog App
