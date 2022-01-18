@@ -1,16 +1,6 @@
-// MIDDLEWARE EXPLANATION
-// code which runs on the sever between getting a request and sending a response.
-// the .use() method is generally used to run middleware code
-// middleware runs from top to bottom until we exit the process or explicitly send a response to the browser.
-
-// MIDDLEWARE EXAMPLES
-// logger middleware to log details of every request
-// Authentication check middleware for protected routes
-// Middleware to parse JSON data from requests
-// Return 404 pages
-
 const express = require("express");
-const morgan = require("morgan");
+const mongoose = require("mongoose");
+const Blog = require("./models/blog");
 
 // initialize express app
 const app = express();
@@ -18,35 +8,63 @@ const app = express();
 // register view engine (ejs)
 app.set("view engine", "ejs");
 
-// listen for requests
-app.listen(3000);
+// give access to static files
+app.use(express.static("public"));
 
-// OUR MIDDLEWARE EXAMPLE
-app.use((req, res, next) => {
-  console.log("new request made");
-  // console.log("host: ", req.hostname);
-  // console.log("path: ", req.path);
-  // console.log("method: ", req.method);
-  next();
+// connect to MongoDB
+const dbURI =
+  "mongodb+srv://jED:eAZtqOeyeOigEwOK@cluster0.jljg1.mongodb.net/node-cc?retryWrites=true&w=majority";
+// We could connect and make queries using the plain MongoDB API and package. Although for this crash course we will be using Mongoose to connect and interact with our database.
+// We must install Mongoose as its a third party package.
+// for more information see 'info.md'
+
+// connect to our database
+mongoose
+  .connect(dbURI)
+  .then((result) => app.listen(3000))
+  .catch((err) => console.log(err));
+// An asynchronous task, takes some time to do...
+// we do not want our server listening for requests until the connection had been made. By moving app.listen() to within the .then() block, we then only listen for requests after the connection is complete.
+
+// mongoose and mongo sandbox routes
+app.get("/add-blog", (req, res) => {
+  const blog = new Blog({
+    title: "new blog 2",
+    snippet: "about my newest blog",
+    body: "more about my newest blog",
+  });
+  // use the model to create a new instance of a blog document, where we pass an object with the different properties of this blog.
+
+  // instance method to save it to the database
+  // asynchronous and returns a promise
+  blog
+    .save()
+    .then((result) => {
+      res.send(result);
+    })
+    .catch((error) => console.log(error));
+  // Once mongoose saves to the database, the database then sends us back an object version of the document inside the collection that it has saved.
+  // http://localhost:3000/add-blog
 });
-// The browser hangs after running our middleware as Express does not know how to move on to our next piece of code.
-// We have to explicitly tell it to move on by use a function called 'next'.
 
-// There are available middleware functions to Express & Node
-// For example 'Morgan' which is a logger, 'Helmet' which is a security piece of middleware. Sessions, cookie validation, etc.
-// We don't always have to write our middleware from scratch if there's a middleware package that solves the issue for us.
+// find a single blog
+app.get("/single-blog", (req, res) => {
+  // mongoose handles the conversion from MongoDB ObjectId to a string and vice-versa.
+  Blog.findById("61e5852e442a686b98f10b3f")
+    .then((result) => res.send(result))
+    .catch((error) => console.log(error));
+});
 
-// MORGAN MIDDLEWARE EXAMPLE
-app.use(morgan("dev"));
-
-// STATIC FILES
-// The server protects all of our files from users in the browser automatically.
-// To allow the browser to access something, we must specify which files should be publicly accessed.
-// To do this we use a ready-made middleware that comes along with Express - 'static' middleware.
-
-app.use(express.static("public")); // pass in folder name
-// Anything inside public will be made available as a static file for the front-end/browser.
-// http://localhost:3000/styles.css
+// retrieve all blogs in the collection
+app.get("/all-blogs", (req, res) => {
+  // get all documents inside the blog collection.
+  // asynchronous operation, must handle promises.
+  Blog.find()
+    .then((result) => {
+      res.send(result);
+    })
+    .catch((error) => console.log(error));
+});
 
 // respond to requests
 app.get("/", (req, res) => {
@@ -67,12 +85,6 @@ app.get("/", (req, res) => {
   res.render("index", { title: "Home", blogs });
   // takes the view, render it and send back the browser
   // second arg used to pass data from our handler to the view (ejs file)
-});
-
-// unreachable on homepage as we send a response to "/" prior
-app.use((req, res, next) => {
-  console.log("In the next middleware");
-  next();
 });
 
 app.get("/about", (req, res) => {
